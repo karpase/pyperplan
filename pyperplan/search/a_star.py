@@ -152,6 +152,16 @@ def astar_search(
         if state_cost[pop_state] == pop_node.g:
             expansions += 1
 
+
+            if pop_node.parent is not None:
+                np = heuristic.calc_h_with_plan(pop_node)
+                pp = heuristic.calc_h_with_plan(pop_node.parent)
+                print("---------------------------------")
+                print("parent: ", pp)
+                print("action:", pop_node.action)
+                print("node:", np)                
+
+
             if task.goal_reached(pop_state):
                 logging.info("Goal reached. Start extraction of solution.")
                 logging.info("%d Nodes expanded" % expansions)

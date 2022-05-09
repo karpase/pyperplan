@@ -17,9 +17,13 @@
 
 import heapq
 import logging
+import copy
+from ..search import iterative_deepening_search
 
 from ..task import Operator, Task
 from .heuristic_base import Heuristic
+
+import pandas as pd
 
 
 """ This module contains the relaxation heuristics hAdd, hMax, hSA and hFF. """
@@ -102,6 +106,8 @@ class _RelaxationHeuristic(Heuristic):
         eval -- a function that is used to evaluate the cost of applying an
                 operator
         """
+        self.orig_task = copy.deepcopy(task)
+
         self.facts = dict()
         self.operators = []
         self.goals = task.goals
@@ -385,6 +391,8 @@ class hFFHeuristic(_RelaxationHeuristic):
         super().__init__(task)
         self.eval = sum
 
+        self.op_counts_list = []
+
     def calc_h_with_plan(self, node):
         """
         Helper method to calculate hFF value together with a relaxed plan.
@@ -409,7 +417,29 @@ class hFFHeuristic(_RelaxationHeuristic):
         self.dijkstra(heap)
         h_value = self.calc_goal_h(True)
 
-        if type(h_value) is tuple:
+        if type(h_value) is tuple:            
+            self.orig_task.initial_state = frozenset(state)
+            s = iterative_deepening_search(self.orig_task)                    
+            op_counts = {}
+            for x in h_value[1]:
+                opname = x.split(' ')[0][1:]
+                op_counts[opname] = op_counts.get(opname,0) + 1
+            op_counts["hstar"] = len(s)
+            self.op_counts_list.append(op_counts)
+
+            adjusted_h = 0
+            ops=["stack", "unstack", "pick-up", "put-down"]
+            weights=[-0.86465572, 3.46040419, 2.30195944, 2.77444908]
+            for op,w in zip(ops,weights):
+                adjusted_h = adjusted_h + (op_counts.get(op,0) * w)
+            print("EREZ:", adjusted_h, h_value[0])
+
+
+            if h_value[0] == 0:
+                df = pd.DataFrame.from_records(self.op_counts_list).fillna(0)
+                print("EREZ:", df)
+                df.to_csv(self.orig_task.name + "-rphstar.csv", index=False)
+
             return h_value[0], h_value[1]
         else:
             return h_value

@@ -90,7 +90,7 @@ class IterativeDeepeningSearchAlgorithm:
             depth += 1
         logging.debug("Emergency brake. Loop? Increase maxdepth.")
         self.print_search_results(depth, -1)
-        return None
+        return planlength
 
     def print_search_results(self, depth, planlength):
         logging.info(
