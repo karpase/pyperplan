@@ -427,14 +427,6 @@ class hFFHeuristic(_RelaxationHeuristic):
             op_counts["hstar"] = len(s)
             self.op_counts_list.append(op_counts)
 
-            adjusted_h = 0
-            ops=["stack", "unstack", "pick-up", "put-down"]
-            weights=[-0.86465572, 3.46040419, 2.30195944, 2.77444908]
-            for op,w in zip(ops,weights):
-                adjusted_h = adjusted_h + (op_counts.get(op,0) * w)
-            print("EREZ:", adjusted_h, h_value[0])
-
-
             if h_value[0] == 0:
                 df = pd.DataFrame.from_records(self.op_counts_list).fillna(0)
                 print("EREZ:", df)
